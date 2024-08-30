@@ -1,0 +1,16 @@
+name: Pre-commit checks
+
+on: [ pull_request ]
+
+jobs:
+  pr-checks:
+    name: Run PR checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - uses: pre-commit/action@v3.0.1
