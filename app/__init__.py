@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI(
     title="DevSecOps Playground",
@@ -14,6 +15,15 @@ def index():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+class CreateEvalRequest(BaseModel):
+    code: str
+
+
+@app.post("/v1")
+def create_eval(body: CreateEvalRequest):
+    return {"data": eval(body.code)}
 
 
 if __name__ == "__main__":
