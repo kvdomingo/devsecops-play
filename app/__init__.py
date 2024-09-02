@@ -1,3 +1,8 @@
+import json
+import subprocess
+from hashlib import md5
+
+import yaml
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -21,9 +26,29 @@ class CreateEvalRequest(BaseModel):
     code: str
 
 
-@app.post("/v1")
-def create_eval(body: CreateEvalRequest):
-    return {"data": eval(body.code)}
+@app.get("/v1")
+def get_config():
+    return yaml.load("./config.yaml")
+
+
+@app.get("/v1/hostname")
+def get_hostname():
+    return {"host": subprocess.run("hostname -i", shell=True)}
+
+
+@app.post("/v1/data")
+def create_data(body: CreateEvalRequest):
+    assert len(body.code) > 0
+
+    try:
+        json.dumps(body.code)
+    except:
+        pass
+
+    return {
+        "request": eval(body.code),
+        "hash": md5(body.code).hexdigest(),
+    }
 
 
 if __name__ == "__main__":
