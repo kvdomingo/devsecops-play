@@ -15,50 +15,50 @@ jobs:
         uses: snyk/actions/python-3.10@master
         continue-on-error: true
         with:
-          args: --sarif-file-output=snyk-code.sarif
+          args: --sarif-file-output=snyk.sarif
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: snyk-code.sarif
+          sarif_file: snyk.sarif
 
       #      - name: Run Snyk Container
       #        uses: snyk/actions/docker@master
       #        continue-on-error: true
       #        with:
       #          image: ghcr.io/kvdomingo/devsecops-play
-      #          args: --file=Dockerfile --sarif-file-output=snyk-container.sarif
+      #          args: --file=Dockerfile
       #
       #      - name: Upload result to GitHub Code Scanning
       #        uses: github/codeql-action/upload-sarif@v3
       #        with:
-      #          sarif_file: snyk-container.sarif
+      #          sarif_file: snyk.sarif
 
       - name: Run Snyk IaC
         uses: snyk/actions/iac@master
         continue-on-error: true
         with:
           file: terraform
-          args: --report --sarif-file-output=snyk-iac.sarif
+          args: --report
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: snyk-iac.sarif
+          sarif_file: snyk.sarif
 
   bandit:
-    name: Run Bandit security scans
+    name: Run Bandit security scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: shundor/bandit-action@v1
+      - uses: shundor/python-bandit-scan@v1.0
         with:
           path: "."
           exit_zero: true
 
   hadolint:
-    name: Run Hadolint security scans
+    name: Run Hadolint scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,3 +67,16 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
+
+  gitleaks:
+    name: Run Gitleaks secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
