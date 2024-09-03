@@ -1,6 +1,9 @@
 name: Apply Terraform infrastructure
 
-on: [ pull_request ]
+on:
+  pull_request: { }
+  push:
+    branches: [ main ]
 
 jobs:
   pr-checks:
@@ -30,3 +33,7 @@ jobs:
 
       - name: Terraform plan
         run: terraform plan -out=.tfplan -input=false
+
+      - name: Terraform apply
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: terraform apply -input=false .tfplan
