@@ -1,0 +1,39 @@
+name: Apply Terraform infrastructure
+
+on:
+  pull_request: { }
+  push:
+    branches: [ main ]
+
+jobs:
+  pr-checks:
+    name: Apply Terraform infrastructure
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.4
+
+      - name: Create Terraform variables
+        run: |
+          cat > terraform.auto.tfvars <<EOF
+          github_token = "${{ secrets.GITHUB_TOKEN }}"
+          EOF
+
+      - name: Terraform initialize
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -out=.tfplan -input=false
+
+      - name: Terraform apply
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: terraform apply -input=false .tfplan
